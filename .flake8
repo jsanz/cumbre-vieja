@@ -1,0 +1,4 @@
+[flake8]
+ignore = D203
+exclude = .git,env,.vscode
+max-complexity = 10
