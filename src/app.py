@@ -72,7 +72,7 @@ IDS = [
 
 ALWAYS_UPLOAD = False
 
-GEOJSON_URL = f"https://opendata.arcgis.com/api/v3/datasets/{id}/downloads/data?"
+GEOJSON_URL = "https://opendata.arcgis.com/api/v3/datasets/{id}/downloads/data?"
 
 GEOJSON_PARAMS = {"format": "geojson", "spatialRefId": "4326"}
 LOC_CANARY = timezone("Atlantic/Canary")
@@ -118,11 +118,11 @@ for id_date in IDS:
 
     # Download the GeoJSON only if not found or always to upload
     if ALWAYS_UPLOAD or not is_found:
-        print(f"Getting the resource [{id}]...")
+        print(f"Getting the resource [{id}] ...")
         url = GEOJSON_URL.format(id=id)
         r = requests.get(url, GEOJSON_PARAMS)
         if r.status_code != 200:
-            print(f"Resource [{id}]not found")
+            print(f"Resource [{id}] not found at {url}")
         else:
             json_dataset = r.json()
             if "features" in json_dataset and "geometry" in json_dataset["features"][0]:
