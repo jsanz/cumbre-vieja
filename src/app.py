@@ -19,6 +19,7 @@ load_dotenv()
 # Define manually the datasets to download because
 # the catalog is tricky to harvest
 IDS = [
+    ["f2c2135df71346bcb82dc018ce019422_0", "2021-11-05", "12:15"],
     ["5064c75858064595a601b17c2877ef10_0", "2021-11-04", "10:00"],
     ["f2f50f3bcb5a42eab1c56b26a606dec0_0", "2021-11-02", "13:00"],
     ["f2eb801094214c588c40106ba7a0716c_0", "2021-11-01", "09:30"],
