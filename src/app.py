@@ -73,7 +73,7 @@ ALWAYS_UPLOAD = False
 
 GEOJSON_URL = (
     "https://opendata.arcgis.com/api/v3/datasets/",
-    "{id}/downloads/data?",
+    f"{id}/downloads/data?",
 )
 GEOJSON_PARAMS = {"format": "geojson", "spatialRefId": "4326"}
 LOC_CANARY = timezone("Atlantic/Canary")
@@ -126,10 +126,7 @@ for id_date in IDS:
             print(f"Resource [{id}]not found")
         else:
             json_dataset = r.json()
-            if (
-                "features" in json_dataset
-                and "geometry" in json_dataset["features"][0]
-            ):
+            if "features" in json_dataset and "geometry" in json_dataset["features"][0]:
                 geometry = rewind(json_dataset["features"][0]["geometry"])
                 geom_area = int(area(geometry))
 
@@ -177,34 +174,30 @@ E_PARAMS = {
     "endDate": datetime.strftime(datetime.now(), "%d/%m/%Y"),
 }
 
-EARTHQUAKE_FORM_DATA = "".join(
-    [
-        f'--data-raw $\'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_formDate"\r\n\r\n1634805267580\r\n',
-        f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_fases"\r\n\r\nno\r\n',
-        f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_selIntensidad"\r\n\r\nN\r\n',
-        f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_selMagnitud"\r\n\r\nN\r\n',
-        f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_selProf"\r\n\r\nN\r\n',
-        f"------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name=\"_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_latMin\"\r\n\r\n{E_PARAMS['latMin']}\r\n",
-        f"------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name=\"_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_latMax\"\r\n\r\n{E_PARAMS['latMax']}\r\n",
-        f"------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name=\"_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_longMin\"\r\n\r\n{E_PARAMS['lonMin']}\r\n",
-        f"------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name=\"_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_longMax\"\r\n\r\n{E_PARAMS['lonMax']}\r\n",
-        f"------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name=\"_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_startDate\"\r\n\r\n{E_PARAMS['startDate']}\r\n",
-        f"------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name=\"_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_endDate\"\r\n\r\n{E_PARAMS['endDate']}\r\n",
-        f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_intMin"\r\n\r\n\r\n',
-        f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_intMax"\r\n\r\n\r\n',
-        f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_magMin"\r\n\r\n\r\n',
-        f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_magMax"\r\n\r\n\r\n',
-        f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_cond"\r\n\r\n\r\n',
-        f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_profMin"\r\n\r\n\r\n',
-        f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_profMax"\r\n\r\n\r\n',
-        f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_tipoDescarga"\r\n\r\ncsv\r\n',
-        f"------WebKitFormBoundaryl7CMY2CM99CkEfej--\r\n",
-    ]
+EARTHQUAKE_FORM_DATA = (
+    f'--data-raw $\'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_formDate"\r\n\r\n1634805267580\r\n',
+    f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_fases"\r\n\r\nno\r\n',
+    f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_selIntensidad"\r\n\r\nN\r\n',
+    f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_selMagnitud"\r\n\r\nN\r\n',
+    f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_selProf"\r\n\r\nN\r\n',
+    f"------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name=\"_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_latMin\"\r\n\r\n{E_PARAMS['latMin']}\r\n",
+    f"------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name=\"_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_latMax\"\r\n\r\n{E_PARAMS['latMax']}\r\n",
+    f"------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name=\"_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_longMin\"\r\n\r\n{E_PARAMS['lonMin']}\r\n",
+    f"------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name=\"_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_longMax\"\r\n\r\n{E_PARAMS['lonMax']}\r\n",
+    f"------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name=\"_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_startDate\"\r\n\r\n{E_PARAMS['startDate']}\r\n",
+    f"------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name=\"_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_endDate\"\r\n\r\n{E_PARAMS['endDate']}\r\n",
+    f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_intMin"\r\n\r\n\r\n',
+    f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_intMax"\r\n\r\n\r\n',
+    f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_magMin"\r\n\r\n\r\n',
+    f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_magMax"\r\n\r\n\r\n',
+    f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_cond"\r\n\r\n\r\n',
+    f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_profMin"\r\n\r\n\r\n',
+    f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_profMax"\r\n\r\n\r\n',
+    f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_tipoDescarga"\r\n\r\ncsv\r\n',
+    f"------WebKitFormBoundaryl7CMY2CM99CkEfej--\r\n",
 )
 
-r = requests.post(
-    EARTHQUAKE_URL, params=EARTHQUAKE_URL_PARAMS, data=EARTHQUAKE_FORM_DATA
-)
+r = requests.post(EARTHQUAKE_URL, params=EARTHQUAKE_URL_PARAMS, data=EARTHQUAKE_FORM_DATA)
 if r.status_code != 200:
     print("Wrong request!")
 else:
@@ -250,9 +243,7 @@ for row in rows:
             doc = {
                 "id": parts[0],
                 "timestamp": LOC_CANARY.localize(
-                    datetime.strptime(
-                        f"{parts[1]} {parts[2]}", "%d/%m/%Y %H:%M:%S"
-                    )
+                    datetime.strptime(f"{parts[1]} {parts[2]}", "%d/%m/%Y %H:%M:%S")
                 ),
                 "geometry": {
                     "type": "Point",
