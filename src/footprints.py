@@ -176,7 +176,7 @@ def index_footprints(client, features, overwrite=False):
         if not overwrite:
             try:
                 client.get(index=INDEX_NAME, id=id)
-                print(f"[{id}] found in ES...")
+                logger.debug(f"[{id}] found in ES...")
                 upload = False
             except NotFoundError:
                 upload = True
