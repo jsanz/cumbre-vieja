@@ -17,6 +17,8 @@ python-dotenv==0.19.1
 pytz==2021.3
 regex==2021.11.2
 requests==2.26.0
+requests-cache==0.8.1
+Shapely==1.8.0
 tomli==1.2.2
 typing-extensions==3.10.0.2
 urllib3==1.26.7
