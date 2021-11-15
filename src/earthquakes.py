@@ -3,6 +3,7 @@ from datetime import datetime
 
 import requests_cache
 from elasticsearch.helpers import bulk
+from elasticsearch.exceptions import NotFoundError
 
 from data import LOC_CANARY
 
@@ -81,7 +82,10 @@ def index_quakes(client, rows):
     Recreates the index for the Earthquakes and uploads the data
     """
     # Create the index if absent
-    client.indices.delete(index=INDEX_NAME)
+    try:
+        client.indices.delete(index=INDEX_NAME)
+    except NotFoundError:
+        logger.debug("Index not found, nothing to delete")
     client.indices.create(
         index=INDEX_NAME,
         settings={"number_of_shards": 1, "number_of_replicas": 1},

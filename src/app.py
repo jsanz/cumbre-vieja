@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 
 import footprints
 import earthquakes
+import buildings
 
 logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("app")
@@ -26,33 +27,48 @@ if not (ES_CLOUD_ID and ES_PASSWORD and ES_USER):
 
 es_client = Elasticsearch(cloud_id=ES_CLOUD_ID, http_auth=(ES_USER, ES_PASSWORD))
 
-# Footprints
+PROCESS_FOOTPRINTS = True
+PROCESS_EARTHQUAKES = True
+PROCESS_BUILDINGS = True
 
-# Create the footprints index
-footprints.create_footprints_index(es_client)
+if PROCESS_FOOTPRINTS:
+    # Footprints
 
-# Download the geojson objects
-features = footprints.download_footprints()
-logger.info(f"Retrieved {len(features)} features from the Open Data portal")
+    # Create the footprints index
+    footprints.create_footprints_index(es_client)
 
-# Process the footprints to get the differences
-diffed_features = footprints.get_diffed_features(features)
+    # Download the geojson objects
+    features = footprints.download_footprints()
+    logger.info(f"Retrieved {len(features)} features from the Open Data portal")
 
-# Upload to ES
-logger.info("Indexing the footprints...")
+    # Process the footprints to get the differences
+    diffed_features = footprints.get_diffed_features(features)
 
-fp_results = footprints.index_footprints(es_client, diffed_features, overwrite=False)
-logger.info(f"indexed: {fp_results['indexed']}")
-logger.info(f"skipped: {fp_results['skipped']}")
-logger.info(f"errors:  {fp_results['errors']}")
+    # Upload to ES
+    logger.info("Indexing the footprints...")
 
-logger.info("Footprints done!")
+    fp_results = footprints.index_footprints(es_client, diffed_features, overwrite=False)
+    logger.info(f"indexed: {fp_results['indexed']}")
+    logger.info(f"skipped: {fp_results['skipped']}")
+    logger.info(f"errors:  {fp_results['errors']}")
 
-# Earthquakes
-logger.info("Downloading quakes data...")
-quakes = earthquakes.download_earthquakes()
-logger.info(f"Retrieved {len(quakes)} quake entries, indexing...")
-earthquakes.index_quakes(es_client, quakes)
-logger.info("Quakes done!")
+    logger.info("Footprints done!")
+
+if PROCESS_EARTHQUAKES:
+
+    # Earthquakes
+    logger.info("Downloading quakes data...")
+    quakes = earthquakes.download_earthquakes()
+    logger.info(f"Retrieved {len(quakes)} quake entries, indexing...")
+    earthquakes.index_quakes(es_client, quakes)
+    logger.info("Quakes done!")
+
+if PROCESS_BUILDINGS:
+    logger.info("Getting the buildings data...")
+    features = buildings.download_buildings()
+    logger.debug(f"{len(features)} buildings downloaded")
+    logger.info("Indexing the buildings...")
+    buildings.index_buildings(es_client, features)
+
 
 logger.info("Process finished")
