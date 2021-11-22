@@ -3,6 +3,7 @@ from pytz import timezone
 LOC_CANARY = timezone("Atlantic/Canary")
 
 IDS = [
+    ["cf134bd2e1a64963823ce80c326c5aa9_0", "2021-11-22", "11:00"],
     ["1a271ee7cda94ec4be0eb6648046f3b1_0", "2021-11-20", "10:00"],
     ["c43659c48c3b4468bf744c7d8bdbf0c9_0", "2021-11-19", "10:45"],
     ["c5691e213665480e8d95b793d7d8f3e5_0", "2021-11-18", "11:00"],
