@@ -1,3 +1,4 @@
+import json
 import logging
 from datetime import datetime
 from copy import deepcopy
@@ -190,3 +191,59 @@ def index_footprints(client, features, overwrite=False):
         else:
             results["skipped"] = results["skipped"] + 1
     return results
+
+
+def get_footprint_feature(feature):
+    return {
+        'type': 'Feature',
+        'id': feature['id'],
+        'geometry': feature['geometry'],
+        'properties': {
+            'id': feature['id'],
+            'area': feature['area'],
+            'timestamp': feature['timestamp']
+        }
+    }
+
+
+def get_diff_footprint_feature(feature):
+    diff_feature = get_footprint_feature(feature)
+
+    if 'diff_id' in feature:
+        id = feature['diff_id']
+
+        diff_feature['id'] = id
+
+        diff_feature.update({
+            'geometry': feature['diff_geometry']
+        })
+
+        diff_feature['properties'].update({
+            'diff_id': id,
+            'diff_area': feature['diff_area'],
+            'diff_timestamp': feature['diff_timestamp']
+        })
+
+    return diff_feature
+
+
+def export(features):
+    """
+    Creates a GeoJSON for the footprints and another for the diffs
+    """
+
+    with open('/tmp/footprints.geo.json', 'w') as writer:
+        f_features = map(get_footprint_feature, features)
+        logger.debug('Exporting full footprints GeoJSON')
+        json.dump({
+            'type': 'FeatureCollection',
+            'features': list(f_features)
+        }, writer)
+
+    with open('/tmp/diff_footprints.geo.json', 'w') as writer:
+        f_features = map(get_diff_footprint_feature, features)
+        logger.debug('Exporting diff footprints GeoJSON')
+        json.dump({
+            'type': 'FeatureCollection',
+            'features': list(f_features)
+        }, writer)

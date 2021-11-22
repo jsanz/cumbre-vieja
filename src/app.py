@@ -30,6 +30,7 @@ es_client = Elasticsearch(cloud_id=ES_CLOUD_ID, http_auth=(ES_USER, ES_PASSWORD)
 PROCESS_FOOTPRINTS = True
 PROCESS_EARTHQUAKES = True
 PROCESS_BUILDINGS = True
+EXPORT_DATA = False
 
 if PROCESS_FOOTPRINTS:
     # Footprints
@@ -51,6 +52,10 @@ if PROCESS_FOOTPRINTS:
     logger.info(f"indexed: {fp_results['indexed']}")
     logger.info(f"skipped: {fp_results['skipped']}")
     logger.info(f"errors:  {fp_results['errors']}")
+
+    if EXPORT_DATA:
+        logger.info('Exporting footprints...')
+        footprints.export(diffed_features)
 
     logger.info("Footprints done!")
 
