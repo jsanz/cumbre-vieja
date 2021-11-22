@@ -109,6 +109,7 @@ def index_quakes(client, rows):
     )
 
     actions = []
+
     for row in rows:
         parts = list(map(lambda x: x.strip(), row.split(";")))
         if len(parts) == 10:
@@ -126,7 +127,7 @@ def index_quakes(client, rows):
                     },
                     "latitude": latitude,
                     "longitude": longitude,
-                    "depth": int(parts[5]) if parts[5] != "" else None,
+                    "depth": float(parts[5]) if parts[5] != "" else None,
                     "intensity": parts[6],
                     "magnitude": float(parts[7]),
                     "mag_type": parts[8],

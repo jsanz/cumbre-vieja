@@ -70,7 +70,7 @@ def get_actions(features):
             logger.error(f"[{type(e)}] - {e}")
 
 
-def index_buildings(client, features, overwrite=False):
+def index_buildings(client, overwrite=False):
     """
     Creates and populates an index with the buildings
     """
@@ -152,6 +152,10 @@ def index_buildings(client, features, overwrite=False):
                 }
             },
         )
+
+        logger.info("Getting the buildings data...")
+        features = download_buildings()
+        logger.debug(f"{len(features)} buildings downloaded")
 
         # Bulk upload the records
         logger.info(f"Uploading to ES {len(features)} records...")

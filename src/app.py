@@ -64,11 +64,8 @@ if PROCESS_EARTHQUAKES:
     logger.info("Quakes done!")
 
 if PROCESS_BUILDINGS:
-    logger.info("Getting the buildings data...")
-    features = buildings.download_buildings()
-    logger.debug(f"{len(features)} buildings downloaded")
-    logger.info("Indexing the buildings...")
-    buildings.index_buildings(es_client, features)
+    logger.info("Processing buildings...")
+    buildings.index_buildings(es_client)
 
 
 logger.info("Process finished")
