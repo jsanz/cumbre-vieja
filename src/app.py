@@ -68,6 +68,10 @@ if PROCESS_EARTHQUAKES:
     earthquakes.index_quakes(es_client, quakes)
     logger.info("Quakes done!")
 
+    if EXPORT_DATA:
+        logger.info('Exporting quakes...')
+        earthquakes.export(quakes)
+
 if PROCESS_BUILDINGS:
     logger.info("Processing buildings...")
     buildings.index_buildings(es_client)

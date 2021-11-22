@@ -232,17 +232,19 @@ def export(features):
     Creates a GeoJSON for the footprints and another for the diffs
     """
 
-    with open('/tmp/footprints.geo.json', 'w') as writer:
+    FILE_PATH = '/tmp/footprints.geo.json'
+    with open(FILE_PATH, 'w') as writer:
         f_features = map(get_footprint_feature, features)
-        logger.debug('Exporting full footprints GeoJSON')
+        logger.debug(f"Exporting full footprints GeoJSON into {FILE_PATH}")
         json.dump({
             'type': 'FeatureCollection',
             'features': list(f_features)
         }, writer)
 
-    with open('/tmp/diff_footprints.geo.json', 'w') as writer:
+    FILE_PATH = '/tmp/footprints_diff.geo.json'
+    with open(FILE_PATH, 'w') as writer:
         f_features = map(get_diff_footprint_feature, features)
-        logger.debug('Exporting diff footprints GeoJSON')
+        logger.debug(f"Exporting diff footprints GeoJSON into {FILE_PATH}")
         json.dump({
             'type': 'FeatureCollection',
             'features': list(f_features)

@@ -1,3 +1,5 @@
+from copy import deepcopy
+import json
 import logging
 from datetime import datetime
 
@@ -13,6 +15,37 @@ logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("app")
 
 session = requests_cache.CachedSession("http_cache", use_cache_dir=True)
+
+
+def get_quake(row):
+    parts = list(map(lambda x: x.strip(), row.split(";")))
+    if len(parts) == 10:
+        try:
+            latitude = float(parts[3])
+            longitude = float(parts[4])
+            return {
+                "id": parts[0],
+                "timestamp": LOC_CANARY.localize(
+                    datetime.strptime(f"{parts[1]} {parts[2]}", "%d/%m/%Y %H:%M:%S")
+                ),
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [longitude, latitude],
+                },
+                "latitude": latitude,
+                "longitude": longitude,
+                "depth": float(parts[5]) if parts[5] != "" else None,
+                "intensity": parts[6],
+                "magnitude": float(parts[7]),
+                "mag_type": parts[8],
+                "location": parts[9],
+            }
+        except Exception as e:
+            logger.error(e)
+            logger.error(parts)
+            return None
+    else:
+        return None
 
 
 def download_earthquakes():
@@ -74,10 +107,12 @@ def download_earthquakes():
         e_text = r.text
         rows = e_text.split("\r\n")[1:]
 
-    return rows
+    filtered_quakes = filter(lambda q: q is not None, map(get_quake, rows))
+
+    return list(filtered_quakes)
 
 
-def index_quakes(client, rows):
+def index_quakes(client, quakes):
     """
     Recreates the index for the Earthquakes and uploads the data
     """
@@ -108,42 +143,43 @@ def index_quakes(client, rows):
         },
     )
 
-    actions = []
-
-    for row in rows:
-        parts = list(map(lambda x: x.strip(), row.split(";")))
-        if len(parts) == 10:
-            try:
-                latitude = float(parts[3])
-                longitude = float(parts[4])
-                doc = {
-                    "id": parts[0],
-                    "timestamp": LOC_CANARY.localize(
-                        datetime.strptime(f"{parts[1]} {parts[2]}", "%d/%m/%Y %H:%M:%S")
-                    ),
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [longitude, latitude],
-                    },
-                    "latitude": latitude,
-                    "longitude": longitude,
-                    "depth": float(parts[5]) if parts[5] != "" else None,
-                    "intensity": parts[6],
-                    "magnitude": float(parts[7]),
-                    "mag_type": parts[8],
-                    "location": parts[9],
-                }
-                actions.append(
-                    {
-                        "_index": "earthquakes",
-                        "_op_type": "index",
-                        "_id": parts[0],
-                        "_source": doc,
-                    }
-                )
-            except Exception as e:
-                logger.error(e)
-                logger.error(parts)
+    actions = list(map(lambda quake: {
+        "_index": "earthquakes",
+        "_op_type": "index",
+        "_id": quake['id'],
+        "_source": quake,
+    }, quakes))
 
     logger.info(f"Uploading to ES {len(actions)} records...")
     bulk(client, actions)
+
+
+def get_geojson_feature(feature):
+    properties = deepcopy(feature)
+    geometry = properties.pop('geometry')
+
+    for key in properties.keys():
+        if type(properties[key]) is datetime:
+            properties[key] = properties[key].isoformat(),
+
+    return {
+        'type': 'Feature',
+        'geometry': geometry,
+        'properties': properties
+    }
+
+
+def export(features):
+    """
+    Creates a GeoJSON for the earthquakes
+    """
+
+    FILE_PATH = '/tmp/earthquakes.geo.json'
+
+    with open(FILE_PATH, 'w') as writer:
+        f_features = map(get_geojson_feature, features)
+        logger.debug(f"Exporting earthquakes GeoJSON into {FILE_PATH}...")
+        json.dump({
+            'type': 'FeatureCollection',
+            'features': list(f_features)
+        }, writer)
