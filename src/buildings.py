@@ -189,7 +189,10 @@ def index_buildings(client, overwrite=False):
             if count > 0:
                 logger.info(f"Reindexing {count} buildings without a footprint id...")
                 client.update_by_query(
-                    INDEX_NAME, body=update_query, wait_for_completion=False
+                    INDEX_NAME,
+                    body=update_query,
+                    pipeline="buildings_footprints",
+                    wait_for_completion=False
                 )
                 logger.info("Update query sent without waiting for completion")
             else:
