@@ -6,6 +6,8 @@ name: Run the app
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'src/data.py'
 
 jobs:
   run:
