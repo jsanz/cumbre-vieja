@@ -1,4 +1,5 @@
 import logging
+import warnings
 
 import requests_cache
 
@@ -9,6 +10,9 @@ from elasticsearch.client.ingest import IngestClient
 
 from shapely.geometry import shape, mapping
 from area import area
+
+warnings.filterwarnings("ignore")
+logging.getLogger("elasticsearch").setLevel(logging.ERROR)
 
 logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("app")

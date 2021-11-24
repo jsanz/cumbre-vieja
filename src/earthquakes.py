@@ -1,6 +1,7 @@
 from copy import deepcopy
 import json
 import logging
+import warnings
 from datetime import datetime
 
 import requests_cache
@@ -10,6 +11,9 @@ from elasticsearch.exceptions import NotFoundError
 from data import LOC_CANARY
 
 INDEX_NAME = "earthquakes"
+
+warnings.filterwarnings("ignore")
+logging.getLogger("elasticsearch").setLevel(logging.ERROR)
 
 logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("app")
@@ -64,48 +68,51 @@ def download_earthquakes():
         "_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_jspPage": "%2Fjsp%2Fterremoto.jsp",
     }
 
-    E_PARAMS = {
-        "latMin": 28.436695,
-        "latMax": 28.868729,
-        "lonMin": -18.045731,
-        "lonMax": -17.685928,
+    FORM_STRING = '------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_'
+
+    form_variables = {
+        "formDate": "1634805267580",
+        "fases": "no",
+        "selIntensidad": "N",
+        "selMagnitud": "N",
+        "selProf": "N",
+        "latMin": "28.436695",
+        "latMax": "28.868729",
+        "longMin": "-18.045731",
+        "longMax": "-17.685928",
         "startDate": "01/08/2021",
         "endDate": datetime.strftime(datetime.now(), "%d/%m/%Y"),
+        "intMin": "",
+        "intMax": "",
+        "magMin": "",
+        "magMax": "",
+        "cond": "",
+        "profMin": "",
+        "profMax": "",
+        "tipoDescarga": "csv",
     }
 
-    EARTHQUAKE_FORM_DATA = "".join(
-        [
-            f'--data-raw $\'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_formDate"\r\n\r\n1634805267580\r\n',
-            f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_fases"\r\n\r\nno\r\n',
-            f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_selIntensidad"\r\n\r\nN\r\n',
-            f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_selMagnitud"\r\n\r\nN\r\n',
-            f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_selProf"\r\n\r\nN\r\n',
-            f"------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name=\"_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_latMin\"\r\n\r\n{E_PARAMS['latMin']}\r\n",
-            f"------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name=\"_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_latMax\"\r\n\r\n{E_PARAMS['latMax']}\r\n",
-            f"------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name=\"_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_longMin\"\r\n\r\n{E_PARAMS['lonMin']}\r\n",
-            f"------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name=\"_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_longMax\"\r\n\r\n{E_PARAMS['lonMax']}\r\n",
-            f"------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name=\"_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_startDate\"\r\n\r\n{E_PARAMS['startDate']}\r\n",
-            f"------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name=\"_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_endDate\"\r\n\r\n{E_PARAMS['endDate']}\r\n",
-            f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_intMin"\r\n\r\n\r\n',
-            f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_intMax"\r\n\r\n\r\n',
-            f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_magMin"\r\n\r\n\r\n',
-            f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_magMax"\r\n\r\n\r\n',
-            f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_cond"\r\n\r\n\r\n',
-            f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_profMin"\r\n\r\n\r\n',
-            f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_profMax"\r\n\r\n\r\n',
-            f'------WebKitFormBoundaryl7CMY2CM99CkEfej\r\nContent-Disposition: form-data; name="_IGNSISCatalogoTerremotos_WAR_IGNSISCatalogoTerremotosportlet_tipoDescarga"\r\n\r\ncsv\r\n',
-            f"------WebKitFormBoundaryl7CMY2CM99CkEfej--\r\n",
-        ]
+    # Expand the variables with the FORM_STRING template
+    form_data = (
+        "--data-raw $"
+        + "".join(
+            map(
+                lambda p: FORM_STRING + p + '"\r\n\r\n' + form_variables[p] + "\r\n",
+                form_variables.keys(),
+            )
+        )
+        + "------WebKitFormBoundaryl7CMY2CM99CkEfej--\r\n"
     )
 
-    r = session.post(
-        EARTHQUAKE_URL, params=EARTHQUAKE_URL_PARAMS, data=EARTHQUAKE_FORM_DATA
-    )
+    r = session.post(EARTHQUAKE_URL, params=EARTHQUAKE_URL_PARAMS, data=form_data)
+
     if r.status_code != 200:
         logger.error("Wrong request!")
     else:
         e_text = r.text
         rows = e_text.split("\r\n")[1:]
+
+    logger.debug(f"{len(rows)} rows returned")
 
     filtered_quakes = filter(lambda q: q is not None, map(get_quake, rows))
 
@@ -113,6 +120,13 @@ def download_earthquakes():
 
 
 def index_quakes(client, quakes):
+
+    # Only repopulate if the number of quakes is higher than the index doc count
+    count_obj = client.count(index=INDEX_NAME)
+    if "count" in count_obj and count_obj["count"] == len(quakes):
+        logger.info('Index has the same number of documents than downloaded data, skipping')
+        return
+
     """
     Recreates the index for the Earthquakes and uploads the data
     """
@@ -143,12 +157,17 @@ def index_quakes(client, quakes):
         },
     )
 
-    actions = list(map(lambda quake: {
-        "_index": "earthquakes",
-        "_op_type": "index",
-        "_id": quake['id'],
-        "_source": quake,
-    }, quakes))
+    actions = list(
+        map(
+            lambda quake: {
+                "_index": "earthquakes",
+                "_op_type": "index",
+                "_id": quake["id"],
+                "_source": quake,
+            },
+            quakes,
+        )
+    )
 
     logger.info(f"Uploading to ES {len(actions)} records...")
     bulk(client, actions)
@@ -156,17 +175,13 @@ def index_quakes(client, quakes):
 
 def get_geojson_feature(feature):
     properties = deepcopy(feature)
-    geometry = properties.pop('geometry')
+    geometry = properties.pop("geometry")
 
     for key in properties.keys():
         if type(properties[key]) is datetime:
-            properties[key] = properties[key].isoformat(),
+            properties[key] = (properties[key].isoformat(),)
 
-    return {
-        'type': 'Feature',
-        'geometry': geometry,
-        'properties': properties
-    }
+    return {"type": "Feature", "geometry": geometry, "properties": properties}
 
 
 def export(features):
@@ -174,12 +189,9 @@ def export(features):
     Creates a GeoJSON for the earthquakes
     """
 
-    FILE_PATH = '/tmp/earthquakes.geo.json'
+    FILE_PATH = "/tmp/earthquakes.geo.json"
 
-    with open(FILE_PATH, 'w') as writer:
+    with open(FILE_PATH, "w") as writer:
         f_features = map(get_geojson_feature, features)
         logger.debug(f"Exporting earthquakes GeoJSON into {FILE_PATH}...")
-        json.dump({
-            'type': 'FeatureCollection',
-            'features': list(f_features)
-        }, writer)
+        json.dump({"type": "FeatureCollection", "features": list(f_features)}, writer)

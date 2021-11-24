@@ -1,5 +1,6 @@
 import json
 import logging
+import warnings
 from datetime import datetime
 from copy import deepcopy
 
@@ -18,6 +19,8 @@ from shapely.validation import make_valid
 
 from data import IDS, LOC_CANARY
 
+warnings.filterwarnings("ignore")
+logging.getLogger("elasticsearch").setLevel(logging.ERROR)
 
 logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("app")

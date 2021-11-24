@@ -12,7 +12,7 @@ import buildings
 
 logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("app")
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 load_dotenv()
 
@@ -39,8 +39,10 @@ if PROCESS_FOOTPRINTS:
     footprints.create_footprints_index(es_client)
 
     # Download the geojson objects
+    logger.info("------------")
+    logger.info("Downloading footprints data...")
     features = footprints.download_footprints()
-    logger.info(f"Retrieved {len(features)} features from the Open Data portal")
+    logger.info(f"Retrieved {len(features)} footprints from the Open Data portal")
 
     # Process the footprints to get the differences
     diffed_features = footprints.get_diffed_features(features)
@@ -49,32 +51,32 @@ if PROCESS_FOOTPRINTS:
     logger.info("Indexing the footprints...")
 
     fp_results = footprints.index_footprints(es_client, diffed_features, overwrite=False)
-    logger.info(f"indexed: {fp_results['indexed']}")
-    logger.info(f"skipped: {fp_results['skipped']}")
-    logger.info(f"errors:  {fp_results['errors']}")
+    logger.info(f"   indexed: {fp_results['indexed']}")
+    logger.info(f"   skipped: {fp_results['skipped']}")
+    logger.info(f"   errors:  {fp_results['errors']}")
 
     if EXPORT_DATA:
         logger.info('Exporting footprints...')
         footprints.export(diffed_features)
 
-    logger.info("Footprints done!")
-
 if PROCESS_EARTHQUAKES:
 
     # Earthquakes
+    logger.info("------------")
     logger.info("Downloading quakes data...")
     quakes = earthquakes.download_earthquakes()
     logger.info(f"Retrieved {len(quakes)} quake entries, indexing...")
     earthquakes.index_quakes(es_client, quakes)
-    logger.info("Quakes done!")
 
     if EXPORT_DATA:
         logger.info('Exporting quakes...')
         earthquakes.export(quakes)
 
 if PROCESS_BUILDINGS:
+    logger.info("------------")
     logger.info("Processing buildings...")
     buildings.index_buildings(es_client)
 
-
-logger.info("Process finished")
+    logger.info("------------")
+    logger.info("Process finished")
+    logger.info("------------")
