@@ -120,12 +120,17 @@ def download_earthquakes():
 
 
 def index_quakes(client, quakes):
-
     """
     Recreates the index for the Earthquakes and uploads the data
     """
     # Create the index if absent
     try:
+        # Only repopulate if the number of quakes is higher than the index doc count
+        count_obj = client.count(index=INDEX_NAME)
+        if "count" in count_obj and count_obj["count"] == len(quakes):
+            logger.info('Index has the same number of documents than downloaded data, skipping')
+            return
+
         client.indices.delete(index=INDEX_NAME)
     except NotFoundError:
         logger.debug("Index not found, nothing to delete")

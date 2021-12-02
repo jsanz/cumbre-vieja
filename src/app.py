@@ -24,6 +24,8 @@ ES_PASSWORD = os.getenv("ES_PASSWORD")
 if not (ES_CLOUD_ID and ES_PASSWORD and ES_USER):
     logger.critical("Environment variables missing")
     sys.exit(1)
+else:
+    logger.info(f"Sending data to cluster: {ES_CLOUD_ID}")
 
 es_client = Elasticsearch(cloud_id=ES_CLOUD_ID, http_auth=(ES_USER, ES_PASSWORD))
 
@@ -31,6 +33,17 @@ PROCESS_FOOTPRINTS = True
 PROCESS_EARTHQUAKES = True
 PROCESS_BUILDINGS = True
 EXPORT_DATA = False
+
+"""
+Reseting the cluster
+
+DELETE _ingest/pipeline/buildings_footprints
+DELETE _enrich/policy/lapalma_lookup
+DELETE lapalma
+DELETE earthquakes
+DELETE lapalma_buildings
+"""
+
 
 if PROCESS_FOOTPRINTS:
     # Footprints
