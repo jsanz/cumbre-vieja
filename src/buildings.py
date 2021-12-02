@@ -1,11 +1,10 @@
 import logging
 import warnings
 
-import requests_cache
+from data import download_geojson
 
 from elasticsearch.helpers import bulk
 from elasticsearch.client import IndicesClient
-from elasticsearch.exceptions import NotFoundError
 from elasticsearch.client.enrich import EnrichClient
 from elasticsearch.client.ingest import IngestClient
 from elasticsearch.exceptions import TransportError
@@ -21,28 +20,10 @@ logging.getLogger("elasticsearch").setLevel(logging.ERROR)
 logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("app")
 
-session = requests_cache.CachedSession("http_cache", use_cache_dir=True)
-
 INDEX_NAME = "lapalma_buildings"
 GEOJSON_URL = (
     "https://opendata.arcgis.com/datasets/1c93601970fb41b480599c54fff25e4f_0.geojson"
 )
-
-
-def download_buildings():
-    """
-    Get the buildings data for La Palma
-    """
-    r = session.get(GEOJSON_URL)
-    if r.status_code != 200:
-        raise Exception("Error downloading the buildings GeoJSON")
-
-    r_obj = r.json()
-
-    if "features" not in r_obj:
-        raise Exception(f"Returned JSON is not a valid GeoJSON: [{r_obj.keys()}]")
-
-    return r_obj["features"]
 
 
 def get_actions(features):
@@ -101,7 +82,6 @@ def create_index(client, index_name):
         logger.info("Index already exists, continuing")
 
 
-
 def create_policy(client):
     enrich_client = EnrichClient(client)
     try:
@@ -120,7 +100,6 @@ def create_policy(client):
                 }
             },
         )
-        
 
     # Execute the policy
     logger.info("Updating the enrich policy...")
@@ -188,7 +167,7 @@ def index_buildings(client, overwrite=False):
         create_index(client, INDEX_NAME)
 
         logger.info("Getting the buildings data...")
-        features = download_buildings()
+        features = download_geojson(GEOJSON_URL)
         logger.debug(f"{len(features)} buildings downloaded")
 
         # Bulk upload the records

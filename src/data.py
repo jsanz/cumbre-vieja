@@ -1,4 +1,7 @@
 from pytz import timezone
+import requests_cache
+
+session = requests_cache.CachedSession("http_cache", use_cache_dir=True)
 
 LOC_CANARY = timezone("Atlantic/Canary")
 
@@ -71,3 +74,19 @@ IDS = [
     ["02a568616ee64cfa89ac5e8de941c132_0", "2021-09-24", "14:00"],
     ["3037f22a00344fbabb34f3f7c9d70ddc_0", "2021-09-20", "12:00"],
 ]
+
+
+def download_geojson(geojson_url):
+    """
+    Get the buildings data for La Palma
+    """
+    r = session.get(geojson_url)
+    if r.status_code != 200:
+        raise Exception("Error downloading the buildings GeoJSON")
+
+    r_obj = r.json()
+
+    if "features" not in r_obj:
+        raise Exception(f"Returned JSON is not a valid GeoJSON: [{r_obj.keys()}]")
+
+    return r_obj["features"]

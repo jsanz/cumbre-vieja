@@ -6,6 +6,7 @@ from elasticsearch import Elasticsearch
 
 from dotenv import load_dotenv
 
+import pits
 import footprints
 import earthquakes
 import buildings
@@ -29,6 +30,7 @@ else:
 
 es_client = Elasticsearch(cloud_id=ES_CLOUD_ID, http_auth=(ES_USER, ES_PASSWORD))
 
+PROCESS_PITS = True
 PROCESS_FOOTPRINTS = True
 PROCESS_EARTHQUAKES = True
 PROCESS_BUILDINGS = True
@@ -39,10 +41,15 @@ Reseting the cluster
 
 DELETE _ingest/pipeline/buildings_footprints
 DELETE _enrich/policy/lapalma_lookup
+DELETE eruptive_pits
 DELETE lapalma
 DELETE earthquakes
 DELETE lapalma_buildings
 """
+
+if PROCESS_PITS:
+    logger.info("------------")
+    pits.upload_pits(es_client)
 
 
 if PROCESS_FOOTPRINTS:
