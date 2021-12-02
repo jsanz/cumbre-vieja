@@ -121,12 +121,6 @@ def download_earthquakes():
 
 def index_quakes(client, quakes):
 
-    # Only repopulate if the number of quakes is higher than the index doc count
-    count_obj = client.count(index=INDEX_NAME)
-    if "count" in count_obj and count_obj["count"] == len(quakes):
-        logger.info('Index has the same number of documents than downloaded data, skipping')
-        return
-
     """
     Recreates the index for the Earthquakes and uploads the data
     """
@@ -156,6 +150,12 @@ def index_quakes(client, quakes):
             }
         },
     )
+
+    # Only repopulate if the number of quakes is higher than the index doc count
+    count_obj = client.count(index=INDEX_NAME)
+    if "count" in count_obj and count_obj["count"] == len(quakes):
+        logger.info('Index has the same number of documents than downloaded data, skipping')
+        return
 
     actions = list(
         map(
