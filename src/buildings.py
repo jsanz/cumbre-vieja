@@ -7,6 +7,9 @@ from elasticsearch.helpers import bulk
 from elasticsearch.exceptions import NotFoundError
 from elasticsearch.client.enrich import EnrichClient
 from elasticsearch.client.ingest import IngestClient
+from elasticsearch.exceptions import TransportError
+from elasticsearch.exceptions import NotFoundError
+from elasticsearch.exceptions import RequestError
 
 from shapely.geometry import shape, mapping
 from area import area
@@ -82,12 +85,14 @@ def index_buildings(client, overwrite=False):
     # Ensure the policy exists an it's updated
     enrich_client = EnrichClient(client)
     try:
-        enrich_client.get_policy(name="lapalma_lookup")
+        policy = enrich_client.get_policy(name="lapalma_lookup")
+        if len(policy['policies']) == 0:
+            raise NotFoundError
     except NotFoundError:
         logger.debug("Creating the lapalma_lookup policy")
         enrich_client.put_policy(
             name="lapalma_lookup",
-            params={
+            body={
                 "geo_match": {
                     "indices": "lapalma",
                     "match_field": "diff_geometry",
@@ -95,10 +100,16 @@ def index_buildings(client, overwrite=False):
                 }
             },
         )
+        
 
     # Execute the policy
     logger.info("Updating the enrich policy...")
-    enrich_client.execute_policy(name="lapalma_lookup")
+
+    try:
+        enrich_client.execute_policy(name="lapalma_lookup")
+    except TransportError as e:
+        logger.error(e)
+
     logger.info("Done!")
 
     # Ensure the pipeline exists
@@ -109,7 +120,7 @@ def index_buildings(client, overwrite=False):
         logger.debug("Creating the enrich pipeline")
         ingest_client.put_pipeline(
             id="buildings_footprints",
-            params={
+            body={
                 "description": "Enrich buildings with Cumbre Vieja footprints.",
                 "processors": [
                     {
@@ -133,6 +144,25 @@ def index_buildings(client, overwrite=False):
                 ],
             },
         )
+
+    try:
+        client.indices.create(
+            index=INDEX_NAME,
+            settings={"number_of_shards": 1, "number_of_replicas": 1},
+            mappings={
+                "properties": {
+                    "id": {"type": "integer"},
+                    "geometry": {"type": "geo_shape"},
+                    "centroid": {"type": "geo_shape"},
+                    "area": {"type": "integer"},
+                    "level": {"type": "integer"},
+                    "name": {"type": "keyword"},
+                    "floors": {"type": "integer"},
+                }
+            },
+        )
+    except RequestError:
+        logger.info("Index already exists, continuing")
 
     if overwrite:
         # Create the index if absent
