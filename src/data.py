@@ -6,6 +6,8 @@ session = requests_cache.CachedSession("http_cache", use_cache_dir=True)
 LOC_CANARY = timezone("Atlantic/Canary")
 
 IDS = [
+    ["9e0a4897b28b4e238726e6312f8f67c1_0", "2021-12-07", "10:30"],
+    ["e7fcf6d3728c48a699732b91bc19010d_0", "2021-12-03", "10:15"],
     ["ce639aa2b6714b818cec49db80ea9425_1", "2021-12-01", "10:00"],
     ["3c980c4cb77f42b09f3d2f703090eed0_0", "2021-11-30", "10:20"],
     ["f9a683035bd34555b02de67c40c95a78_0", "2021-11-29", "10:00"],
