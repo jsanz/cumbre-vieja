@@ -5,7 +5,7 @@ import re
 # Check the Open Data portal for new datasets
 OPENDATA_URL = 'https://www.opendatalapalma.es/api/v3/datasets'
 OPENDATA_PARAMS = {
-    'page[size]': 20,
+    'page[size]': 100,
     'filter[source]': 'Cabildo Insular de La Palma',
     'filter[downloadable]': 'true',
     'filter[hubType]': 'Feature Layer',
@@ -14,11 +14,9 @@ OPENDATA_PARAMS = {
 
 CLEANR = re.compile('<.*?>')
 
-
 def cleanhtml(raw_html):
     cleantext = re.sub(CLEANR, '', raw_html).replace('\n', ' ').replace('\r', '')
-    return cleantext[:200]
-
+    return cleantext
 
 r = requests.get(OPENDATA_URL, OPENDATA_PARAMS)
 
@@ -29,11 +27,11 @@ else:
     if len(results) == 0:
         print("No results in your search!")
 
+print("\"id\",\"timestamp\",\"description\"")
 for r in results:
     atts = r['attributes']
     desc = atts['description'] or atts['snippet']
     created = datetime.fromtimestamp(atts['created'] / 1000).isoformat()
     id = r['id']
     clean_desc = cleanhtml(desc) if desc else ''
-    
-    print(id + " - " + created + " - " + clean_desc)
+    print(f"\"{id}\",\"{created}\",\"{clean_desc[:130]}\"")
